@@ -29,11 +29,16 @@ app.get("/set", (req, res) => {
 app.get("/fetch", (req, res) => {
  res.send(`a = ${a}`);
 });
-
+//Displays all URLS in URL database
 app.get("/urls", (req, res) => {
   const templateVars = { urls: urlDatabase};
   res.render("urls_index", templateVars);
 })
+
+app.get("/urls/new", (req, res) => {
+  res.render("urls_new");
+});
+
 //Display single URL details (long and short)
 app.get("/urls/:shortURL", (req, res) => {
   const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL]/* What goes here? */ };
