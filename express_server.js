@@ -34,6 +34,12 @@ app.get("/urls", (req, res) => {
   const templateVars = { urls: urlDatabase};
   res.render("urls_index", templateVars);
 })
+//Display single URL details (long and short)
+app.get("/urls/:shortURL", (req, res) => {
+  const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL]/* What goes here? */ };
+  res.render("urls_show", templateVars);
+});
+
 //Displays in terminal console (not on web page) when server is booted up using node express_server.js
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
