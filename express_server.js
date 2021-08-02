@@ -29,6 +29,11 @@ app.get("/set", (req, res) => {
 app.get("/fetch", (req, res) => {
  res.send(`a = ${a}`);
 });
+
+app.get("/urls", (req, res) => {
+  const templateVars = { urls: urlDatabase};
+  res.render("urls_index", templateVars);
+})
 //Displays in terminal console (not on web page) when server is booted up using node express_server.js
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
