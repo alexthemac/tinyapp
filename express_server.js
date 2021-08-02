@@ -12,6 +12,16 @@ const urlDatabase = {
 const bodyParser = require("body-parser");
 app.use(bodyParser.urlencoded({extended: true}));
 
+function generateRandomString() {
+  let randomString = '';
+  let availChars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890'
+
+  for (let i = 0; i < 6; i ++) {
+    randomString += availChars[Math.round(Math.random() * 62)]
+  }
+  console.log(randomString);  
+}
+
 //Landing page displays Hello!
 app.get("/", (req, res) => {
   res.send("Hello!");
