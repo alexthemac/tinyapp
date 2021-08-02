@@ -58,17 +58,21 @@ app.get("/urls/new", (req, res) => {
 app.get("/urls/:shortURL", (req, res) => {
   const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL]};
   res.render("urls_show", templateVars);
+
 });
+//Links to actual Long URL when short URL is clicked (notice it's /u/:shortURL not /urls/:shortURL)
+app.get("/u/:shortURL", (req, res) => {
+  const longURL = urlDatabase[req.params.shortURL];
+  res.redirect(longURL);
+});
+
 //Takes the data input into new /url/new and does something with it...
 app.post("/urls", (req, res) => {
-  //console.log(req.body); // Log the POST request body to the console {longURL: 'whatever entered in form}
+  //console.log(req.body); // Log the POST request body to the console {longURL: 'whatever entered in form'}
   const shortURLNew = generateRandomString(); //Creates a randomstring for the shortURLNew
   const longURLNew = req.body.longURL; //Takes the data entered in the form and stores it in longURLNew
   urlDatabase[shortURLNew] = longURLNew; //Creates new entry in urlDatabse object 
-  // console.log(urlDatabase);
-
   res.redirect(`/urls/${shortURLNew}`) //Redirects to displaying single URL details (long and short) once new created.
-
   // res.send("Ok");         // Respond with 'Ok' (we will replace this)...Replaced by redirect above
 });
 
