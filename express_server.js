@@ -12,6 +12,7 @@ const urlDatabase = {
 const bodyParser = require("body-parser");
 app.use(bodyParser.urlencoded({extended: true}));
 
+//Generate random alphanumeric string for the shortURL. 
 function generateRandomString() {
   let randomString = '';
   let availChars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890'
@@ -19,7 +20,7 @@ function generateRandomString() {
   for (let i = 0; i < 6; i ++) {
     randomString += availChars[Math.round(Math.random() * 62)]
   }
-  console.log(randomString);  
+  return randomString;  
 }
 
 //Landing page displays Hello!
@@ -58,9 +59,13 @@ app.get("/urls/:shortURL", (req, res) => {
   const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL]/* What goes here? */ };
   res.render("urls_show", templateVars);
 });
-
+//Takes the data input into new /url/new and does something with it...
 app.post("/urls", (req, res) => {
   console.log(req.body); // Log the POST request body to the console
+  const shortURLNew = generateRandomString();
+  const longURLNew = req.body.longURL;
+  urlDatabase[shortURLNew] = longURLNew;
+  console.log(urlDatabase);
   res.send("Ok");         // Respond with 'Ok' (we will replace this)
 });
 
