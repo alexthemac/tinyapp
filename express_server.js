@@ -18,7 +18,7 @@ function generateRandomString() {
   let availChars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890'
 
   for (let i = 0; i < 6; i ++) {
-    randomString += availChars[Math.round(Math.random() * 62)]
+    randomString += availChars[Math.round(Math.random() * 61)]
   }
   return randomString;  
 }
@@ -56,17 +56,20 @@ app.get("/urls/new", (req, res) => {
 
 //Display single URL details (long and short)
 app.get("/urls/:shortURL", (req, res) => {
-  const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL]/* What goes here? */ };
+  const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL]};
   res.render("urls_show", templateVars);
 });
 //Takes the data input into new /url/new and does something with it...
 app.post("/urls", (req, res) => {
-  console.log(req.body); // Log the POST request body to the console
-  const shortURLNew = generateRandomString();
-  const longURLNew = req.body.longURL;
-  urlDatabase[shortURLNew] = longURLNew;
-  console.log(urlDatabase);
-  res.send("Ok");         // Respond with 'Ok' (we will replace this)
+  //console.log(req.body); // Log the POST request body to the console {longURL: 'whatever entered in form}
+  const shortURLNew = generateRandomString(); //Creates a randomstring for the shortURLNew
+  const longURLNew = req.body.longURL; //Takes the data entered in the form and stores it in longURLNew
+  urlDatabase[shortURLNew] = longURLNew; //Creates new entry in urlDatabse object 
+  // console.log(urlDatabase);
+
+  res.redirect(`/urls/${shortURLNew}`) //Redirects to displaying single URL details (long and short) once new created.
+
+  // res.send("Ok");         // Respond with 'Ok' (we will replace this)...Replaced by redirect above
 });
 
 //Displays in terminal console (not on web page) when server is booted up using node express_server.js
