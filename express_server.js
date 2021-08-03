@@ -85,8 +85,12 @@ app.post("/urls/:shortURL/delete", (req, res) => { //not sure why it's not just 
 
 //Edits url 
 app.post("/urls/:shortURL/edit", (req, res) => { //not sure why it's not just /urls for the path
-  //const urlToEdit = req.params["shortURL"];
-  console.log("shortURL to be edited:", req.params);
+  
+  const shortURLToUpdate = req.params['shortURL']; //grabs the shortURL from the path
+  const updatedLongURL = req.body['longURL']; //grabs the longURL that is entered in the form
+  // console.log("shortURL to be edited(req.params['shortURL']):", req.params['shortURL']);
+  // console.log("new longURL (req.body['longURL']):", req.body['longURL']);
+  urlDatabase[shortURLToUpdate] = updatedLongURL; //updates urlDatabase with this data
   
 });
 
