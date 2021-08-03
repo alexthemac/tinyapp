@@ -79,10 +79,18 @@ app.post("/urls", (req, res) => {
 //Deletes a url from the url database. (url to delete is :shortURL variable)
 app.post("/urls/:shortURL/delete", (req, res) => { //not sure why it's not just /urls for the path
   const urlToDelete = req.params["shortURL"];
+  console.log("deleted:",req.params["shortURL"]);
   delete urlDatabase[urlToDelete];
 });
 
-//<td><form method="POST" action="/urls/9sm5xK/delete"><button><strong>DELETE</strong></button></form></td>
+//Edits url 
+app.post("/urls/:shortURL/edit", (req, res) => { //not sure why it's not just /urls for the path
+  //const urlToEdit = req.params["shortURL"];
+  console.log("shortURL to be edited:", req.params);
+  
+});
+
+
 
 //Displays in terminal console (not on web page) when server is booted up using node express_server.js
 app.listen(PORT, () => {
