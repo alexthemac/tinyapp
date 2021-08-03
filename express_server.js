@@ -77,7 +77,7 @@ app.post("/urls", (req, res) => {
 });
 
 //Deletes a url from the url database. (url to delete is :shortURL variable)
-app.post("/urls/:shortURL/delete", (req, res) => {
+app.post("/urls/:shortURL/delete", (req, res) => { //not sure why it's not just /urls for the path
   const urlToDelete = req.params["shortURL"];
   delete urlDatabase[urlToDelete];
 });
