@@ -76,6 +76,14 @@ app.post("/urls", (req, res) => {
   // res.send("Ok");         // Respond with 'Ok' (we will replace this)...Replaced by redirect above
 });
 
+//Deletes a url from the url database. (url to delete is :shortURL variable)
+app.post("/urls/:shortURL/delete", (req, res) => {
+  const urlToDelete = req.params["shortURL"];
+  delete urlDatabase[urlToDelete];
+});
+
+//<td><form method="POST" action="/urls/9sm5xK/delete"><button><strong>DELETE</strong></button></form></td>
+
 //Displays in terminal console (not on web page) when server is booted up using node express_server.js
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
