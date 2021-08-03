@@ -77,22 +77,22 @@ app.post("/urls", (req, res) => {
 });
 
 //Deletes a url from the url database. (url to delete is :shortURL variable)
-app.post("/urls/:shortURL/delete", (req, res) => { //not sure why it's not just /urls for the path
+app.post("/urls/:shortURL/delete", (req, res) => { 
   const urlToDelete = req.params["shortURL"];
   console.log("deleted:",req.params["shortURL"]);
   delete urlDatabase[urlToDelete];
 });
 
-//Edits url 
-app.post("/urls/:shortURL/edit", (req, res) => { //not sure why it's not just /urls for the path
-  
+//Edits url in the url database. (url to edit is :shortURL variable)
+app.post("/urls/:shortURL", (req, res) => { 
   const shortURLToUpdate = req.params['shortURL']; //grabs the shortURL from the path
   const updatedLongURL = req.body['longURL']; //grabs the longURL that is entered in the form
   // console.log("shortURL to be edited(req.params['shortURL']):", req.params['shortURL']);
   // console.log("new longURL (req.body['longURL']):", req.body['longURL']);
   urlDatabase[shortURLToUpdate] = updatedLongURL; //updates urlDatabase with this data
-  
+  res.redirect(`/urls`); //redirects to /urls page once I edit one
 });
+
 
 
 
