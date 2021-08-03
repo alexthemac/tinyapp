@@ -93,7 +93,14 @@ app.post("/urls/:shortURL", (req, res) => {
   res.redirect(`/urls`); //redirects to /urls page once I edit one
 });
 
-
+app.post("/login", (req, res) => {
+  const usernameEntered = req.body["username"];
+  console.log("username entered:", req.body["username"])
+  res.cookie('username', usernameEntered);
+  //console.log();
+  res.redirect(`/urls`);
+  
+})
 
 
 
