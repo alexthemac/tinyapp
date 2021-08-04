@@ -108,6 +108,17 @@ app.get("/u/:shortURL", (req, res) => {
   res.redirect(longURL);
 });
 
+//Displays login page
+app.get("/login", (req, res) => {
+  const templateVars = { 
+    //username: req.cookies["username"],
+    user: users[req.cookies["user_id"]],
+    shortURL: req.params.shortURL, 
+    longURL: urlDatabase[req.params.shortURL]
+  };
+  res.render("urls_login", templateVars);
+});
+
 //Takes the data input into new /url/new and does something with it...
 app.post("/urls", (req, res) => {
   //console.log(req.body); // Log the POST request body to the console {longURL: 'whatever entered in form'}
@@ -123,6 +134,7 @@ app.post("/urls/:shortURL/delete", (req, res) => {
   const urlToDelete = req.params["shortURL"];
   console.log("deleted:",req.params["shortURL"]);
   delete urlDatabase[urlToDelete];
+  res.redirect('/urls');
 });
 
 //Edits url in the url database. (url to edit is :shortURL variable)
@@ -135,15 +147,15 @@ app.post("/urls/:shortURL", (req, res) => {
   res.redirect(`/urls`); //redirects to /urls page once I edit one
 });
 
+//
 app.post("/login", (req, res) => {
   const usernameEntered = req.body["username"];
-  console.log("username entered:", req.body["username"])
   res.cookie('username', usernameEntered);
   res.redirect(`/urls`);
 });
 
 app.post("/logout", (req, res) => {
-  res.clearCookie("username");
+  res.clearCookie("user_id");
   res.redirect(`/urls`);
 });
 
@@ -160,34 +172,29 @@ app.post("/register", (req, res) => {
   };
   //if email is blank or password is blank, display error
   if (email === "" || password === "") {
-    console.log(users);
     //Sets status code to 400 (bad request)
     res.status(400);
     //Displays 'Response: 400 Bad Request on the /register page
     res.send('Response: Not a valid email');
   //if email is already in user "database", display error
   } else if (emailInUsers === true) {
-    console.log(users);
     //Sets status code to 400 (bad request)
     res.status(400);
     //Displays 'Response: 400 Bad Request on the /register page
     res.send('Response: Email already exits');
   } else {
-    console.log(users);
     //Adds the new created user to the users object
     users[id] = {
     id,
     email,
     password
     };
-    console.log(users);
     //Sets a user_id cookie to the newly created id
+    console.log(users);
     res.cookie('user_id', id);
     res.redirect(`/urls`);
   }
 });
-
-
 
 //Displays in terminal console (not on web page) when server is booted up using node express_server.js
 app.listen(PORT, () => {
