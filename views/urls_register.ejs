@@ -15,22 +15,24 @@
   <%- include('partials/_header') %>
 
   <main style="margin: 1em;">
-    <h3>Register</h3>
+    <h3><b>Create Account</b></h3>
     <form class="form-inline" action="/register" method="POST">
       <ul>
-        <li>  
           <div class="form-group mb-2">
-            <label for="longURL">Email Address:&nbsp&nbsp&nbsp</label>
-            <input class="form-control" type="email" name="email" placeholder="address@email.com">
+            <label for="longURL">Email address</label>
           </div>
-        </li>
-        <li>
           <div class="form-group mb-2">
-            <label for="longURL">Password:&nbsp&nbsp&nbsp</label>
-            <input class="form-control" type="password" name="password">
-            &nbsp&nbsp&nbsp <button type="submit" class="btn btn-primary">Submit</button>
+            <input class="form-control" type="email" name="email" placeholder="Enter email">
           </div>
-        </li>
+          <div class="form-group mb-2">
+            <label for="longURL">Password</label>
+          </div>
+          <div class="form-group mb-2">
+            <input class="form-control" type="password" name="password" placeholder="Password">
+          </div>
+          <div class="form-group mb-2"> 
+            <button type="submit" class="btn btn-primary">Register</button>
+          </div>
       </ul>
     </form>
   </main>
