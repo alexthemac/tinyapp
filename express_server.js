@@ -54,7 +54,7 @@ app.get("/urls", (req, res) => {
     };
   res.render("urls_index", templateVars);
 });
-
+//Displays create new URL page
 app.get("/urls/new", (req, res) => {
   const templateVars = {
     username: req.cookies["username"]
@@ -72,6 +72,17 @@ app.get("/urls/:shortURL", (req, res) => {
   res.render("urls_show", templateVars);
 
 });
+
+//Display registration URL page
+app.get("/register", (req, res) => {
+  const templateVars = { 
+    username: req.cookies["username"],
+    shortURL: req.params.shortURL, 
+    longURL: urlDatabase[req.params.shortURL]
+  };
+  res.render("urls_register", templateVars);
+});
+
 //Links to actual Long URL when short URL is clicked (notice it's /u/:shortURL not /urls/:shortURL)
 app.get("/u/:shortURL", (req, res) => {
   const longURL = urlDatabase[req.params.shortURL];
