@@ -11,6 +11,8 @@ const urlDatabase = {
 
 const bodyParser = require("body-parser");
 app.use(bodyParser.urlencoded({extended: true}));
+var cookieParser = require('cookie-parser'); //If not included, cookies is undefined initially and website crashes
+app.use(cookieParser()); //If not included, cookies is undefined initially and website crashes
 
 //Generate random alphanumeric string for the shortURL. 
 function generateRandomString() {
@@ -46,17 +48,27 @@ app.get("/fetch", (req, res) => {
 });
 //Displays all URLS in URL database
 app.get("/urls", (req, res) => {
-  const templateVars = { urls: urlDatabase};
+  const templateVars = { 
+    username: req.cookies["username"],
+    urls: urlDatabase
+    };
   res.render("urls_index", templateVars);
-})
+});
 
 app.get("/urls/new", (req, res) => {
-  res.render("urls_new");
+  const templateVars = {
+    username: req.cookies["username"]
+  };
+  res.render("urls_new", templateVars);
 });
 
 //Display single URL details (long and short)
 app.get("/urls/:shortURL", (req, res) => {
-  const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL]};
+  const templateVars = { 
+    username: req.cookies["username"],
+    shortURL: req.params.shortURL, 
+    longURL: urlDatabase[req.params.shortURL]
+  };
   res.render("urls_show", templateVars);
 
 });
