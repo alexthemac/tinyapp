@@ -9,6 +9,21 @@ const urlDatabase = {
   "9sm5xK": "http://www.google.com"
 };
 
+//Used to store and access the users in the app
+const users = { 
+  "1": {
+    id: "1", 
+    email: "1@1.com", 
+    password: "1"
+  },
+ "user2RandomID": {
+    id: "user2RandomID", 
+    email: "user2@example.com", 
+    password: "dishwasher-funk"
+  }
+};
+
+
 const bodyParser = require("body-parser");
 app.use(bodyParser.urlencoded({extended: true}));
 var cookieParser = require('cookie-parser'); //If not included, cookies is undefined initially and website crashes
@@ -49,7 +64,8 @@ app.get("/fetch", (req, res) => {
 //Displays all URLS in URL database
 app.get("/urls", (req, res) => {
   const templateVars = { 
-    username: req.cookies["username"],
+    //username: req.cookies["username"],
+    user: users[req.cookies["user_id"]],
     urls: urlDatabase
     };
   res.render("urls_index", templateVars);
@@ -57,7 +73,8 @@ app.get("/urls", (req, res) => {
 //Displays create new URL page
 app.get("/urls/new", (req, res) => {
   const templateVars = {
-    username: req.cookies["username"]
+    //username: req.cookies["username"]
+    user: users[req.cookies["user_id"]]
   };
   res.render("urls_new", templateVars);
 });
@@ -65,7 +82,8 @@ app.get("/urls/new", (req, res) => {
 //Display single URL details (long and short)
 app.get("/urls/:shortURL", (req, res) => {
   const templateVars = { 
-    username: req.cookies["username"],
+    //username: req.cookies["username"],
+    user: users[req.cookies["user_id"]],
     shortURL: req.params.shortURL, 
     longURL: urlDatabase[req.params.shortURL]
   };
@@ -76,7 +94,8 @@ app.get("/urls/:shortURL", (req, res) => {
 //Display registration URL page
 app.get("/register", (req, res) => {
   const templateVars = { 
-    username: req.cookies["username"],
+    //username: req.cookies["username"],
+    user: users[req.cookies["user_id"]],
     shortURL: req.params.shortURL, 
     longURL: urlDatabase[req.params.shortURL]
   };
@@ -120,13 +139,52 @@ app.post("/login", (req, res) => {
   const usernameEntered = req.body["username"];
   console.log("username entered:", req.body["username"])
   res.cookie('username', usernameEntered);
-  //console.log();
   res.redirect(`/urls`);
 });
 
 app.post("/logout", (req, res) => {
   res.clearCookie("username");
   res.redirect(`/urls`);
+});
+
+//Adds new user to users object
+app.post("/register", (req, res) => {
+  const {email, password} = req.body; //Grabs the email and password entered in /register
+  const id = generateRandomString(); //Creates a unique id for the new user
+  let emailInUsers = false;
+  //Check if email is already in user "database"
+  for (user in users) {
+    if (email === users[user]['email']) {
+      emailInUsers = true;
+    }
+  };
+  //if email is blank or password is blank, display error
+  if (email === "" || password === "") {
+    console.log(users);
+    //Sets status code to 400 (bad request)
+    res.status(400);
+    //Displays 'Response: 400 Bad Request on the /register page
+    res.send('Response: Not a valid email');
+  //if email is already in user "database", display error
+  } else if (emailInUsers === true) {
+    console.log(users);
+    //Sets status code to 400 (bad request)
+    res.status(400);
+    //Displays 'Response: 400 Bad Request on the /register page
+    res.send('Response: Email already exits');
+  } else {
+    console.log(users);
+    //Adds the new created user to the users object
+    users[id] = {
+    id,
+    email,
+    password
+    };
+    console.log(users);
+    //Sets a user_id cookie to the newly created id
+    res.cookie('user_id', id);
+    res.redirect(`/urls`);
+  }
 });
 
 
