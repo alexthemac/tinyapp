@@ -7,7 +7,6 @@ const getUserByEmail = function(email, database) {
       return user;
     }
   }
-  return false;
 };
 
 //For future?
