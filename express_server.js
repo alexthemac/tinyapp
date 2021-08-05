@@ -35,6 +35,10 @@ const urlDatabase = {
     longURL: "https://www.tsn.ca",
     userID: "2"
   },
+  sgq3y6: {
+    longURL: "https://www.tsn.ca",
+    userID: "aJ48lW"
+  },
 };
 
 
@@ -101,7 +105,7 @@ function userIDLookup (email) {
 //Creates a new DB based according to which user is logged in
 function filterURLDatabase (cookieID) {
   let filteredDB = {};
-  
+
   for (url in urlDatabase) {
     if (urlDatabase[url]["userID"] === cookieID) {
       filteredDB[url] = urlDatabase[url];
@@ -246,19 +250,39 @@ app.post("/urls", (req, res) => {
 });
 
 //Deletes a url from the url database. (url to delete is :shortURL variable)
-app.post("/urls/:shortURL/delete", (req, res) => { 
-  const urlToDelete = req.params["shortURL"];
-  delete urlDatabase[urlToDelete];
-  res.redirect('/urls');
+app.post("/urls/:shortURL/delete", (req, res) => {
+  //Checks if the person trying to delete the url was the one to create it. Does not allow delete unless creator.
+  if (req.cookies['user_id'] !== urlDatabase[req.params['shortURL']]['userID']) {
+    //Sets status code to 403 
+    res.status(403);
+    //Displays 'Response'
+    res.send('Response: Cannot delete this URL unless logged in as the creator of this URL');
+  //Else they are the creator and can delete
+  } else {
+    console.log("PreDelete:",urlDatabase);
+    const urlToDelete = req.params["shortURL"];
+    delete urlDatabase[urlToDelete];
+    console.log("PostDelete:",urlDatabase);
+    res.redirect('/urls');
+  };
 });
 
 //Edits url in the url database. (url to edit is :shortURL variable)
-app.post("/urls/:shortURL", (req, res) => { 
-  const shortURLToUpdate = req.params['shortURL']; //grabs the shortURL from the path
-  const updatedLongURL = req.body['longURL']; //grabs the longURL that is entered in the form
-  // urlDatabase[shortURLToUpdate] = updatedLongURL; //updates urlDatabase with this data
-  urlDatabase[shortURLToUpdate]['longURL'] = updatedLongURL;
-  res.redirect(`/urls`); //redirects to /urls page once I edit one
+app.post("/urls/:shortURL", (req, res) => {
+  //Checks if the person trying to edit the url was the one to create it. Does not allow edit unless creator.
+  if (req.cookies['user_id'] !== urlDatabase[req.params['shortURL']]['userID']) {
+    //Sets status code to 403 
+    res.status(403);
+    //Displays 'Response'
+    res.send('Response: Cannot edit this URL unless logged in as the creator of this URL');
+  //Else they are the creator and can edit
+  } else {
+    const shortURLToUpdate = req.params['shortURL']; //grabs the shortURL from the path
+    const updatedLongURL = req.body['longURL']; //grabs the longURL that is entered in the form
+    // urlDatabase[shortURLToUpdate] = updatedLongURL; //updates urlDatabase with this data
+    urlDatabase[shortURLToUpdate]['longURL'] = updatedLongURL;
+    res.redirect(`/urls`); //redirects to /urls page once I edit one
+  };
 });
 
 //Logs in user
