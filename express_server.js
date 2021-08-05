@@ -84,24 +84,34 @@ function generateRandomString() {
 }
 
 //Check if email is already in user "database"
-function emailAlreadyRegistered (email) {
-  for (user in users) {
-    if (email === users[user]['email']) {
-      return true;
+const getUserByEmail = function(email, database) {
+  for (user in database) {
+    if (email === database[user]['email']) {
+      return user;
     }
   }
   return false;
 };
 
-//Check if password matches password in user "database"...obsolete now that we have hashed passwords
-function passwordMatchRegistered (password) {
-  for (user in users) {
-    if (password === users[user]['password']) {
-      return true;
-    }
-  }
-  return false;
-};
+// //OBSOLETE (see function above that replaced it)
+// function emailAlreadyRegistered (email) {
+//   for (user in users) {
+//     if (email === users[user]['email']) {
+//       return true;
+//     }
+//   }
+//   return false;
+// };
+
+// //OBSOLETE (Now have hashed passwords) Check if password matches password in user "database"
+// function passwordMatchRegistered (password) {
+//   for (user in users) {
+//     if (password === users[user]['password']) {
+//       return true;
+//     }
+//   }
+//   return false;
+// };
 
 //Return hashed password from user Database based on email
 function hashedPasswordLookup (email) {
@@ -313,13 +323,13 @@ app.post("/login", (req, res) => {
   const password = req.body['password'];
 
   //If email has not been registerd, throw error
-  if (!emailAlreadyRegistered(email)) {
+  if (!getUserByEmail(email, users)) {
     //Sets status code to 403 
     res.status(403);
     //Displays 'Response'
     res.send('Response: Email not registered');
   //If email has been registered, but wrong password entered, throw error (bcrypt used to compare password and hashed password)
-  } else if (emailAlreadyRegistered(email) && !bcrypt.compareSync(password, hashedPasswordLookup(email))) {
+  } else if (getUserByEmail(email, users) && !bcrypt.compareSync(password, hashedPasswordLookup(email))) {
     //Sets status code to 403 
     res.status(403);
     //Displays 'Response'
@@ -354,7 +364,7 @@ app.post("/register", (req, res) => {
     //Displays 'Response: 400 Bad Request on the /register page
     res.send('Response: Not a valid email');
   //if email is already in user "database", display error
-  } else if (emailAlreadyRegistered(email) === true) {
+  } else if (getUserByEmail(email, users)) {
     //Sets status code to 400 (bad request)
     res.status(400);
     //Displays 'Response: 400 Bad Request on the /register page
