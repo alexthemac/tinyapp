@@ -24,6 +24,7 @@ app.set("view engine", "ejs") //Sets ejs as the view engine
 //   "9sm5xK": "http://www.google.com"
 // };
 
+//Stores all urls 
 const urlDatabase = {
   b6UTxQ: {
       longURL: "https://www.tsn.ca",
@@ -55,7 +56,6 @@ const urlDatabase = {
   },
 };
 
-
 //Used to store and access the users in the app
 const users = { 
   "1": {
@@ -70,7 +70,10 @@ const users = {
   }
 };
 
+//For future?
+//const { generateRandomString, getUserByEmail, hashedPasswordLookup, userIDLookup, filterURLDatabase } = require('./helpers');
 
+const { getUserByEmail } = require('./helpers');
 
 //Generate random alphanumeric string for the shortURL. 
 function generateRandomString() {
@@ -82,36 +85,6 @@ function generateRandomString() {
   }
   return randomString;  
 }
-
-//Check if email is already in user "database"
-const getUserByEmail = function(email, database) {
-  for (user in database) {
-    if (email === database[user]['email']) {
-      return user;
-    }
-  }
-  return false;
-};
-
-// //OBSOLETE (see function above that replaced it)
-// function emailAlreadyRegistered (email) {
-//   for (user in users) {
-//     if (email === users[user]['email']) {
-//       return true;
-//     }
-//   }
-//   return false;
-// };
-
-// //OBSOLETE (Now have hashed passwords) Check if password matches password in user "database"
-// function passwordMatchRegistered (password) {
-//   for (user in users) {
-//     if (password === users[user]['password']) {
-//       return true;
-//     }
-//   }
-//   return false;
-// };
 
 //Return hashed password from user Database based on email
 function hashedPasswordLookup (email) {
@@ -144,6 +117,31 @@ function filterURLDatabase (cookieID) {
   }
   return filteredDB;
 };
+
+
+
+
+
+
+// //OBSOLETE (see function above that replaced it)
+// function emailAlreadyRegistered (email) {
+//   for (user in users) {
+//     if (email === users[user]['email']) {
+//       return true;
+//     }
+//   }
+//   return false;
+// };
+
+// //OBSOLETE (Now have hashed passwords) Check if password matches password in user "database"
+// function passwordMatchRegistered (password) {
+//   for (user in users) {
+//     if (password === users[user]['password']) {
+//       return true;
+//     }
+//   }
+//   return false;
+// };
 
 
 
