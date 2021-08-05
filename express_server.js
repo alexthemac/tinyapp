@@ -4,6 +4,7 @@ const PORT = 8080; // default port 8080
 
 app.set("view engine", "ejs") //Sets ejs as the view engine
 
+//Old database style...overwritten by one below
 // const urlDatabase = {
 //   "b2xVn2": "http://www.lighthouselabs.ca",
 //   "9sm5xK": "http://www.google.com"
@@ -17,7 +18,23 @@ const urlDatabase = {
   i3BoGr: {
       longURL: "https://www.google.ca",
       userID: "aJ48lW"
-  }
+  },
+  a22222: {
+    longURL: "https://www.google.ca",
+    userID: "1"
+  },
+  a33333: {
+    longURL: "https://www.google.ca",
+    userID: "1"
+  },
+  b44444: {
+    longURL: "https://www.tsn.ca",
+    userID: "2"
+  },
+  b55555: {
+    longURL: "https://www.tsn.ca",
+    userID: "2"
+  },
 };
 
 
@@ -28,16 +45,17 @@ const users = {
     email: "1@1.com", 
     password: "1"
   },
- "user2RandomID": {
-    id: "user2RandomID", 
-    email: "user2@example.com", 
-    password: "dishwasher-funk"
+ "2": {
+    id: "2", 
+    email: "2@2.com", 
+    password: "2"
   }
 };
 
 const bodyParser = require("body-parser");
 app.use(bodyParser.urlencoded({extended: true}));
 var cookieParser = require('cookie-parser'); //If not included, cookies is undefined initially and website crashes
+const e = require("express");
 app.use(cookieParser()); //If not included, cookies is undefined initially and website crashes
 
 //Generate random alphanumeric string for the shortURL. 
@@ -72,12 +90,24 @@ function passwordMatchRegistered (password) {
 };
 
 //Return user_id from user "database" via email lookup
-const userIDLookup = function (email) {
+function userIDLookup (email) {
   for (user in users) {
     if (email === users[user]['email']) {
       return user;
     }
   }
+};
+
+//Creates a new DB based according to which user is logged in
+function filterURLDatabase (cookieID) {
+  let filteredDB = {};
+  
+  for (url in urlDatabase) {
+    if (urlDatabase[url]["userID"] === cookieID) {
+      filteredDB[url] = urlDatabase[url];
+    }
+  }
+  return filteredDB;
 };
 
 
@@ -105,17 +135,28 @@ app.get("/fetch", (req, res) => {
 
 //Displays all URLS in URL database
 app.get("/urls", (req, res) => {
-  const templateVars = { 
-    user: users[req.cookies["user_id"]],
-    urls: urlDatabase
-    };
-  res.render("urls_index", templateVars);
+  //Displays error if not logged in 
+  if (!req.cookies["user_id"]) {
+    //Sets status code to 403 
+    res.status(403); //Is this correct status code? 
+    //Displays 'Response: 403 Bad Request on the /login page
+    res.send('Response: User not logged in. Please login to view urls');
+  //Else create a new database with only URLs created by logged in user.
+  } else {
+    //Creates new database with only URLs created by user (user defined by the user_id cookie)
+    let filteredUrlDatabase = filterURLDatabase(req.cookies["user_id"]);
+    const templateVars = { 
+      user: users[req.cookies["user_id"]],
+      urls: filteredUrlDatabase
+      };
+    res.render("urls_index", templateVars);
+  }
 });
 
 //Displays create new URL page
 app.get("/urls/new", (req, res) => {
   //If user is not logged in, redirect them to login page
-  if(!req.cookies['user_id']) {
+  if (!req.cookies['user_id']) {
     res.redirect('/login');
   //If use is logged in, allow them to create new URL
   } else {
@@ -128,13 +169,21 @@ app.get("/urls/new", (req, res) => {
 
 //Display single URL details (long and short)
 app.get("/urls/:shortURL", (req, res) => {
+  //If user is not logged in, or logged in as the wrong user (for the shortURL in the browser bar), send error
+  if (!req.cookies['user_id'] || urlDatabase[req.params.shortURL]["userID"] != req.cookies["user_id"]) {
+    //Sets status code to 403 
+    res.status(403); //Is this correct status code? 
+    //Displays 'Response: 403 Bad Request on the /login page
+    res.send('Response: User not logged in. Please login to view urls');
+  //Else display the urls_show page
+  } else {
     const templateVars = { 
-    user: users[req.cookies["user_id"]],
-    shortURL: req.params.shortURL, 
-    //longURL: urlDatabase[req.params.shortURL]
-    longURL: urlDatabase[req.params.shortURL]['longURL']
-  };
+      user: users[req.cookies["user_id"]],
+      shortURL: req.params.shortURL, 
+      longURL: urlDatabase[req.params.shortURL]['longURL']
+    };
   res.render("urls_show", templateVars);
+  };
 });
 
 //Display registration URL page
