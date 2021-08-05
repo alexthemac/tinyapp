@@ -4,10 +4,22 @@ const PORT = 8080; // default port 8080
 
 app.set("view engine", "ejs") //Sets ejs as the view engine
 
+// const urlDatabase = {
+//   "b2xVn2": "http://www.lighthouselabs.ca",
+//   "9sm5xK": "http://www.google.com"
+// };
+
 const urlDatabase = {
-  "b2xVn2": "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://www.google.com"
+  b6UTxQ: {
+      longURL: "https://www.tsn.ca",
+      userID: "aJ48lW"
+  },
+  i3BoGr: {
+      longURL: "https://www.google.ca",
+      userID: "aJ48lW"
+  }
 };
+
 
 //Used to store and access the users in the app
 const users = { 
@@ -102,12 +114,10 @@ app.get("/urls", (req, res) => {
 
 //Displays create new URL page
 app.get("/urls/new", (req, res) => {
+  //If user is not logged in, redirect them to login page
   if(!req.cookies['user_id']) {
     res.redirect('/login');
-    // //Sets status code to 403 
-    // res.status(403);
-    // //Displays 'Response: 403 Bad Request on the /login page
-    // res.send('Response: Cannot create new URL unless logged in');
+  //If use is logged in, allow them to create new URL
   } else {
     const templateVars = {
       user: users[req.cookies["user_id"]]
@@ -118,10 +128,11 @@ app.get("/urls/new", (req, res) => {
 
 //Display single URL details (long and short)
 app.get("/urls/:shortURL", (req, res) => {
-  const templateVars = { 
+    const templateVars = { 
     user: users[req.cookies["user_id"]],
     shortURL: req.params.shortURL, 
-    longURL: urlDatabase[req.params.shortURL]
+    //longURL: urlDatabase[req.params.shortURL]
+    longURL: urlDatabase[req.params.shortURL]['longURL']
   };
   res.render("urls_show", templateVars);
 });
@@ -131,15 +142,26 @@ app.get("/register", (req, res) => {
   const templateVars = { 
     user: users[req.cookies["user_id"]],
     shortURL: req.params.shortURL, 
-    longURL: urlDatabase[req.params.shortURL]
+    //longURL: urlDatabase[req.params.shortURL]
+    //longURL: urlDatabase[req.params.shortURL]['longURL']
   };
   res.render("urls_register", templateVars);
 });
 
 //Links to actual Long URL when short URL is clicked (notice it's /u/:shortURL not /urls/:shortURL)
 app.get("/u/:shortURL", (req, res) => {
-  const longURL = urlDatabase[req.params.shortURL];
-  res.redirect(longURL);
+  //If shortURL does not exist, send error
+  if(!urlDatabase[req.params.shortURL]) {
+    //Sets status code to 400 
+    res.status(400);
+    //Displays 'Response: 400 Bad Request on the /login page
+    res.send('Response: shortURL does not exist!');
+    //Else redirect to longURL
+  } else { 
+    // const longURL = urlDatabase[req.params.shortURL];
+    const longURL = urlDatabase[req.params.shortURL]['longURL'];
+    res.redirect(longURL);
+  }
 });
 
 //Displays login page
@@ -147,18 +169,31 @@ app.get("/login", (req, res) => {
   const templateVars = { 
     user: users[req.cookies["user_id"]],
     shortURL: req.params.shortURL, 
-    longURL: urlDatabase[req.params.shortURL]
+    // longURL: urlDatabase[req.params.shortURL]
+    //longURL: urlDatabase[req.params.shortURL]['longURL']
   };
   res.render("urls_login", templateVars);
 });
 
 //Takes the data input into new /url/new and does something with it...
 app.post("/urls", (req, res) => {
-  const shortURLNew = generateRandomString(); //Creates a randomstring for the shortURLNew
-  const longURLNew = req.body.longURL; //Takes the data entered in the form and stores it in longURLNew
-  urlDatabase[shortURLNew] = longURLNew; //Creates new entry in urlDatabse object 
-  res.redirect(`/urls/${shortURLNew}`) //Redirects to displaying single URL details (long and short) once new created.
-  // res.send("Ok");         // Respond with 'Ok' (we will replace this)...Replaced by redirect above
+  //If user is not logged in provide them with an error message
+  if(!req.cookies['user_id']) {
+    //Sets status code to 403 
+    res.status(403);
+    //Displays 'Response: 403 Bad Request on the /login page
+    res.send('Response: Cannot create new URL unless logged in');
+  } else {
+    const shortURLNew = generateRandomString(); //Creates a randomstring for the shortURLNew
+    const longURLNew = req.body.longURL; //Takes the data entered in the form and stores it in longURLNew
+    // urlDatabase[shortURLNew] = longURLNew; //Creates new entry in urlDatabse object 
+    urlDatabase[shortURLNew] = { 
+      longURL: longURLNew,
+      userID: req.cookies["user_id"]
+    }
+    console.log(urlDatabase);
+    res.redirect(`/urls/${shortURLNew}`) //Redirects to displaying single URL details (long and short) once new created.
+  }
 });
 
 //Deletes a url from the url database. (url to delete is :shortURL variable)
@@ -172,7 +207,8 @@ app.post("/urls/:shortURL/delete", (req, res) => {
 app.post("/urls/:shortURL", (req, res) => { 
   const shortURLToUpdate = req.params['shortURL']; //grabs the shortURL from the path
   const updatedLongURL = req.body['longURL']; //grabs the longURL that is entered in the form
-  urlDatabase[shortURLToUpdate] = updatedLongURL; //updates urlDatabase with this data
+  // urlDatabase[shortURLToUpdate] = updatedLongURL; //updates urlDatabase with this data
+  urlDatabase[shortURLToUpdate]['longURL'] = updatedLongURL;
   res.redirect(`/urls`); //redirects to /urls page once I edit one
 });
 
@@ -231,6 +267,7 @@ app.post("/register", (req, res) => {
     email,
     password
     };
+    console.log(users);
     //Sets a user_id cookie to the newly created id
     res.cookie('user_id', id);
     res.redirect(`/urls`);
