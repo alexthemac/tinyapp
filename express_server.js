@@ -90,6 +90,7 @@ app.get("/set", (req, res) => {
 app.get("/fetch", (req, res) => {
  res.send(`a = ${a}`);
 });
+
 //Displays all URLS in URL database
 app.get("/urls", (req, res) => {
   const templateVars = { 
@@ -98,12 +99,21 @@ app.get("/urls", (req, res) => {
     };
   res.render("urls_index", templateVars);
 });
+
 //Displays create new URL page
 app.get("/urls/new", (req, res) => {
-  const templateVars = {
-    user: users[req.cookies["user_id"]]
+  if(!req.cookies['user_id']) {
+    res.redirect('/login');
+    // //Sets status code to 403 
+    // res.status(403);
+    // //Displays 'Response: 403 Bad Request on the /login page
+    // res.send('Response: Cannot create new URL unless logged in');
+  } else {
+    const templateVars = {
+      user: users[req.cookies["user_id"]]
+    };
+    res.render("urls_new", templateVars);
   };
-  res.render("urls_new", templateVars);
 });
 
 //Display single URL details (long and short)
@@ -175,13 +185,13 @@ app.post("/login", (req, res) => {
   if (!emailAlreadyRegistered(email)) {
     //Sets status code to 403 
     res.status(403);
-    //Displays 'Response: 400 Bad Request on the /login page
+    //Displays 'Response'
     res.send('Response: Email not registered');
   //If email has been registered, but wrong password entered, throw error
   } else if (emailAlreadyRegistered(email) && !passwordMatchRegistered(password)) {
     //Sets status code to 403 
     res.status(403);
-    //Displays 'Response: 400 Bad Request on the /login page
+    //Displays 'Response'
     res.send('Response: Password does not match records');
   //If the email has been registered and password is correct, update cookie with user_id to id of email entered
   } else {
