@@ -1,6 +1,7 @@
 const express = require("express"); //allows us to use "simpler commands" for creating webserver (compared to HTTP only)
 const app = express();
 const PORT = 8080; // default port 8080
+const bcrypt = require('bcryptjs');
 
 app.set("view engine", "ejs") //Sets ejs as the view engine
 
@@ -47,12 +48,12 @@ const users = {
   "1": {
     id: "1", 
     email: "1@1.com", 
-    password: "1"
+    hashedPassword: bcrypt.hashSync("1", 10) //Turns the simple password "1" into hash
   },
  "2": {
     id: "2", 
     email: "2@2.com", 
-    password: "2"
+    hashedPassword: bcrypt.hashSync("2", 10) //Turns the simple password "2" into hash
   }
 };
 
@@ -93,6 +94,17 @@ function passwordMatchRegistered (password) {
   return false;
 };
 
+//Return hashed password from user Database based on email
+function hashedPasswordLookup (email) {
+  for (user in users) {
+    if (email === users[user]['email']) {
+      const hashedPassword = users[user]['hashedPassword'];
+      return hashedPassword;
+    }
+  }
+  return false;
+};
+
 //Return user_id from user "database" via email lookup
 function userIDLookup (email) {
   for (user in users) {
@@ -113,6 +125,7 @@ function filterURLDatabase (cookieID) {
   }
   return filteredDB;
 };
+
 
 
 //Landing page displays Hello!
@@ -228,7 +241,7 @@ app.get("/login", (req, res) => {
   res.render("urls_login", templateVars);
 });
 
-//Takes the data input into new /url/new and does something with it...
+//Takes the data input into new /url/new and creates new urlDatabase entry
 app.post("/urls", (req, res) => {
   //If user is not logged in provide them with an error message
   if(!req.cookies['user_id']) {
@@ -296,8 +309,8 @@ app.post("/login", (req, res) => {
     res.status(403);
     //Displays 'Response'
     res.send('Response: Email not registered');
-  //If email has been registered, but wrong password entered, throw error
-  } else if (emailAlreadyRegistered(email) && !passwordMatchRegistered(password)) {
+  //If email has been registered, but wrong password entered, throw error (bcrypt used to compare password and hashed password)
+  } else if (emailAlreadyRegistered(email) && !bcrypt.compareSync(password, hashedPasswordLookup(email))) {
     //Sets status code to 403 
     res.status(403);
     //Displays 'Response'
@@ -318,7 +331,10 @@ app.post("/logout", (req, res) => {
 
 //Adds new user to users object
 app.post("/register", (req, res) => {
-  const {email, password} = req.body; //Grabs the email and password entered in /register
+  //const {email, password} = req.body; //Grabs the email and password entered in /register
+  const email = req.body.email; //Grabs email entered in /register
+  const password = req.body.password; //Grabs password entered in /register
+  const hashedPassword = bcrypt.hashSync(password, 10); //Hashes password using bcrypt
   const id = generateRandomString(); //Creates a unique id for the new user
 
   //if email is blank or password is blank, display error
@@ -338,7 +354,7 @@ app.post("/register", (req, res) => {
     users[id] = {
     id,
     email,
-    password
+    hashedPassword
     };
     console.log(users);
     //Sets a user_id cookie to the newly created id
