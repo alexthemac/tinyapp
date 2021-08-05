@@ -6,8 +6,7 @@ const bcrypt = require('bcryptjs');
 const bodyParser = require("body-parser");
 app.use(bodyParser.urlencoded({extended: true}));
 //var cookieParser = require('cookie-parser'); //Overridden by cookieSession (for encrypted cookies) If not included, cookies is undefined initially and website crashes
-const e = require("express");
-// app.use(cookieParser()); //Overridden by cookieSession (for encrypted cookies) If not included, cookies is undefined initially and website crashes
+//app.use(cookieParser()); //Overridden by cookieSession (for encrypted cookies) If not included, cookies is undefined initially and website crashes
 
 const cookieSession = require('cookie-session');
 app.use(cookieSession({
@@ -16,7 +15,7 @@ app.use(cookieSession({
 }));
 
 
-app.set("view engine", "ejs") //Sets ejs as the view engine
+app.set("view engine", "ejs"); //Sets ejs as the view engine
 
 //Old database style...overwritten by one below
 // const urlDatabase = {
@@ -24,15 +23,15 @@ app.set("view engine", "ejs") //Sets ejs as the view engine
 //   "9sm5xK": "http://www.google.com"
 // };
 
-//Stores all urls 
+//Stores all urls
 const urlDatabase = {
   b6UTxQ: {
-      longURL: "https://www.tsn.ca",
-      userID: "aJ48lW"
+    longURL: "https://www.tsn.ca",
+    userID: "aJ48lW"
   },
   i3BoGr: {
-      longURL: "https://www.google.ca",
-      userID: "aJ48lW"
+    longURL: "https://www.google.ca",
+    userID: "aJ48lW"
   },
   a22222: {
     longURL: "https://www.google.ca",
@@ -57,15 +56,15 @@ const urlDatabase = {
 };
 
 //Used to store and access the users in the app
-const users = { 
+const users = {
   "1": {
-    id: "1", 
-    email: "1@1.com", 
+    id: "1",
+    email: "1@1.com",
     hashedPassword: bcrypt.hashSync("1", 10) //Turns the simple password "1" into hash
   },
- "2": {
-    id: "2", 
-    email: "2@2.com", 
+  "2": {
+    id: "2",
+    email: "2@2.com",
     hashedPassword: bcrypt.hashSync("2", 10) //Turns the simple password "2" into hash
   }
 };
@@ -75,20 +74,20 @@ const users = {
 
 const { getUserByEmail } = require('./helpers');
 
-//Generate random alphanumeric string for the shortURL. 
-function generateRandomString() {
+//Generate random alphanumeric string for the shortURL.
+const generateRandomString = function() {
   let randomString = '';
-  let availChars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890'
+  let availChars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890';
 
   for (let i = 0; i < 6; i ++) {
-    randomString += availChars[Math.round(Math.random() * 61)]
+    randomString += availChars[Math.round(Math.random() * 61)];
   }
-  return randomString;  
-}
+  return randomString;
+};
 
 //Return hashed password from user Database based on email
-function hashedPasswordLookup (email) {
-  for (user in users) {
+const hashedPasswordLookup = function(email) {
+  for (const user in users) {
     if (email === users[user]['email']) {
       const hashedPassword = users[user]['hashedPassword'];
       return hashedPassword;
@@ -98,8 +97,8 @@ function hashedPasswordLookup (email) {
 };
 
 //Return user_id from user "database" via email lookup
-function userIDLookup (email) {
-  for (user in users) {
+const  userIDLookup = function(email) {
+  for (const user in users) {
     if (email === users[user]['email']) {
       return user;
     }
@@ -107,10 +106,9 @@ function userIDLookup (email) {
 };
 
 //Creates a new DB based according to which user is logged in
-function filterURLDatabase (cookieID) {
+const filterURLDatabase = function(cookieID) {
   let filteredDB = {};
-
-  for (url in urlDatabase) {
+  for (const url in urlDatabase) {
     if (urlDatabase[url]["userID"] === cookieID) {
       filteredDB[url] = urlDatabase[url];
     }
@@ -118,71 +116,31 @@ function filterURLDatabase (cookieID) {
   return filteredDB;
 };
 
-
-
-
-
-
-// //OBSOLETE (see function above that replaced it)
-// function emailAlreadyRegistered (email) {
-//   for (user in users) {
-//     if (email === users[user]['email']) {
-//       return true;
-//     }
-//   }
-//   return false;
-// };
-
-// //OBSOLETE (Now have hashed passwords) Check if password matches password in user "database"
-// function passwordMatchRegistered (password) {
-//   for (user in users) {
-//     if (password === users[user]['password']) {
-//       return true;
-//     }
-//   }
-//   return false;
-// };
-
-
-
 //Landing page displays Hello!
 app.get("/", (req, res) => {
-  res.send("Hello!");
-});
-//Converts the urlDatabase object to a JSON string, and displays the JSON string
-app.get("/urls.json", (req, res) => {
-  res.json(urlDatabase);
-});
-//Applies some html formatting to Hello World, and the formatting is displayed when visiting the path
-app.get("/hello", (req, res) => {
-  res.send("<html><body>Hello <b>World</b></body></html>\n");
-});
-//Sets a = 1, but this will only work within the /set path.
-app.get("/set", (req, res) => {
- const a = 1;
- res.send(`a = ${a}`);
-});
-//Will not work as a is not defined globally, only in the /set path and not the /fetch path.
-app.get("/fetch", (req, res) => {
- res.send(`a = ${a}`);
+  if (req.session.user_id) {
+    res.redirect('/urls');
+  } else {
+    res.redirect('/login');
+  }
 });
 
 //Displays all URLS in URL database
 app.get("/urls", (req, res) => {
-  //Displays error if not logged in 
+  //Displays error if not logged in
   if (!req.session.user_id) {
-    //Sets status code to 403 
-    res.status(403); //Is this correct status code? 
+    //Sets status code to 403
+    res.status(403); //Is this correct status code?
     //Displays 'Response: 403 Bad Request on the /login page
     res.send('Response: User not logged in. Please login to view urls');
   //Else create a new database with only URLs created by logged in user.
   } else {
     //Creates new database with only URLs created by user (user defined by the user_id cookie)
     let filteredUrlDatabase = filterURLDatabase(req.session.user_id);
-    const templateVars = { 
+    const templateVars = {
       user: users[req.session.user_id],
       urls: filteredUrlDatabase
-      };
+    };
     res.render("urls_index", templateVars);
   }
 });
@@ -198,49 +156,61 @@ app.get("/urls/new", (req, res) => {
       user: users[req.session.user_id]
     };
     res.render("urls_new", templateVars);
-  };
+  }
 });
 
 //Display single URL details (long and short)
 app.get("/urls/:shortURL", (req, res) => {
-  //If user is not logged in, or logged in as the wrong user (for the shortURL in the browser bar), send error
-  if (!req.session.user_id || urlDatabase[req.params.shortURL]["userID"] != req.session.user_id) {
-    //Sets status code to 403 
-    res.status(403); //Is this correct status code? 
-    //Displays 'Response: 403 Bad Request on the /login page
+  //If short URL does not exist:
+  if (!urlDatabase[req.params.shortURL]) {
+    //Sets status code to 403
+    res.status(403); //Is this correct status code?
+    //Displays Response
+    res.send('Response: URL for the given ID does not exist');
+  //If user is not logged in:
+  } else if (!req.session.user_id) {
+    //Sets status code to 403
+    res.status(403); //Is this correct status code?
+    //Displays Response
     res.send('Response: User not logged in. Please login to view urls');
+  //If user is logged in but does not own the URL with the given ID:
+  } else if (urlDatabase[req.params.shortURL]["userID"] !== req.session.user_id) {
   //Else display the urls_show page
   } else {
-    const templateVars = { 
+    const templateVars = {
       user: users[req.session.user_id],
-      shortURL: req.params.shortURL, 
+      shortURL: req.params.shortURL,
       longURL: urlDatabase[req.params.shortURL]['longURL']
     };
-  res.render("urls_show", templateVars);
-  };
+    res.render("urls_show", templateVars);
+  }
 });
 
 //Display registration URL page
 app.get("/register", (req, res) => {
-  const templateVars = { 
-    user: users[req.session.user_id],
-    shortURL: req.params.shortURL, 
-    //longURL: urlDatabase[req.params.shortURL]
-    //longURL: urlDatabase[req.params.shortURL]['longURL']
-  };
-  res.render("urls_register", templateVars);
+  if (req.session.user_id) {
+    res.redirect('/urls');
+  } else {
+    const templateVars = {
+      user: users[req.session.user_id],
+      shortURL: req.params.shortURL,
+      //longURL: urlDatabase[req.params.shortURL]
+      //longURL: urlDatabase[req.params.shortURL]['longURL']
+    };
+    res.render("urls_register", templateVars);
+  }
 });
 
 //Links to actual Long URL when short URL is clicked (notice it's /u/:shortURL not /urls/:shortURL)
 app.get("/u/:shortURL", (req, res) => {
   //If shortURL does not exist, send error
-  if(!urlDatabase[req.params.shortURL]) {
-    //Sets status code to 400 
+  if (!urlDatabase[req.params.shortURL]) {
+    //Sets status code to 400
     res.status(400);
     //Displays 'Response: 400 Bad Request on the /login page
     res.send('Response: shortURL does not exist!');
     //Else redirect to longURL
-  } else { 
+  } else {
     // const longURL = urlDatabase[req.params.shortURL];
     const longURL = urlDatabase[req.params.shortURL]['longURL'];
     res.redirect(longURL);
@@ -249,33 +219,37 @@ app.get("/u/:shortURL", (req, res) => {
 
 //Displays login page
 app.get("/login", (req, res) => {
-  const templateVars = { 
-    user: users[req.session.user_id],
-    shortURL: req.params.shortURL, 
-    // longURL: urlDatabase[req.params.shortURL]
-    //longURL: urlDatabase[req.params.shortURL]['longURL']
-  };
-  res.render("urls_login", templateVars);
+  if (req.session.user_id) {
+    res.redirect('/urls');
+  } else {
+    const templateVars = {
+      user: users[req.session.user_id],
+      shortURL: req.params.shortURL,
+      // longURL: urlDatabase[req.params.shortURL]
+      //longURL: urlDatabase[req.params.shortURL]['longURL']
+    };
+    res.render("urls_login", templateVars);
+  }
 });
 
 //Takes the data input into new /url/new and creates new urlDatabase entry
 app.post("/urls", (req, res) => {
   //If user is not logged in provide them with an error message
-  if(!req.session.user_id) {
-    //Sets status code to 403 
+  if (!req.session.user_id) {
+    //Sets status code to 403
     res.status(403);
     //Displays 'Response: 403 Bad Request on the /login page
     res.send('Response: Cannot create new URL unless logged in');
   } else {
     const shortURLNew = generateRandomString(); //Creates a randomstring for the shortURLNew
     const longURLNew = req.body.longURL; //Takes the data entered in the form and stores it in longURLNew
-    // urlDatabase[shortURLNew] = longURLNew; //Creates new entry in urlDatabse object 
-    urlDatabase[shortURLNew] = { 
+    // urlDatabase[shortURLNew] = longURLNew; //Creates new entry in urlDatabse object
+    urlDatabase[shortURLNew] = {
       longURL: longURLNew,
       userID: req.session.user_id
-    }
+    };
     console.log(urlDatabase);
-    res.redirect(`/urls/${shortURLNew}`) //Redirects to displaying single URL details (long and short) once new created.
+    res.redirect(`/urls/${shortURLNew}`); //Redirects to displaying single URL details (long and short) once new created.
   }
 });
 
@@ -283,7 +257,7 @@ app.post("/urls", (req, res) => {
 app.post("/urls/:shortURL/delete", (req, res) => {
   //Checks if the person trying to delete the url was the one to create it. Does not allow delete unless creator.
   if (req.session.user_id !== urlDatabase[req.params['shortURL']]['userID']) {
-    //Sets status code to 403 
+    //Sets status code to 403
     res.status(403);
     //Displays 'Response'
     res.send('Response: Cannot delete this URL unless logged in as the creator of this URL');
@@ -294,14 +268,14 @@ app.post("/urls/:shortURL/delete", (req, res) => {
     delete urlDatabase[urlToDelete];
     console.log("PostDelete:",urlDatabase);
     res.redirect('/urls');
-  };
+  }
 });
 
 //Edits url in the url database. (url to edit is :shortURL variable)
 app.post("/urls/:shortURL", (req, res) => {
   //Checks if the person trying to edit the url was the one to create it. Does not allow edit unless creator.
   if (req.session.user_id !== urlDatabase[req.params['shortURL']]['userID']) {
-    //Sets status code to 403 
+    //Sets status code to 403
     res.status(403);
     //Displays 'Response'
     res.send('Response: Cannot edit this URL unless logged in as the creator of this URL');
@@ -312,7 +286,7 @@ app.post("/urls/:shortURL", (req, res) => {
     // urlDatabase[shortURLToUpdate] = updatedLongURL; //updates urlDatabase with this data
     urlDatabase[shortURLToUpdate]['longURL'] = updatedLongURL;
     res.redirect(`/urls`); //redirects to /urls page once I edit one
-  };
+  }
 });
 
 //Logs in user
@@ -322,13 +296,13 @@ app.post("/login", (req, res) => {
 
   //If email has not been registerd, throw error
   if (!getUserByEmail(email, users)) {
-    //Sets status code to 403 
+    //Sets status code to 403
     res.status(403);
     //Displays 'Response'
     res.send('Response: Email not registered');
   //If email has been registered, but wrong password entered, throw error (bcrypt used to compare password and hashed password)
   } else if (getUserByEmail(email, users) && !bcrypt.compareSync(password, hashedPasswordLookup(email))) {
-    //Sets status code to 403 
+    //Sets status code to 403
     res.status(403);
     //Displays 'Response'
     res.send('Response: Password does not match records');
@@ -336,7 +310,7 @@ app.post("/login", (req, res) => {
   } else {
     const id = userIDLookup(email);
     //Sets a user_id cookie to the login id
-    req.session.user_id = id;
+    req.session.user_id = id; //Right here
     res.redirect(`/urls`);
   }
 });
@@ -370,9 +344,9 @@ app.post("/register", (req, res) => {
   } else {
     //Adds the new created user to the users object
     users[id] = {
-    id,
-    email,
-    hashedPassword
+      id,
+      email,
+      hashedPassword
     };
     console.log(users);
     //Sets a user_id cookie to the newly created id
