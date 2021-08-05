@@ -3,6 +3,19 @@ const app = express();
 const PORT = 8080; // default port 8080
 const bcrypt = require('bcryptjs');
 
+const bodyParser = require("body-parser");
+app.use(bodyParser.urlencoded({extended: true}));
+//var cookieParser = require('cookie-parser'); //Overridden by cookieSession (for encrypted cookies) If not included, cookies is undefined initially and website crashes
+const e = require("express");
+// app.use(cookieParser()); //Overridden by cookieSession (for encrypted cookies) If not included, cookies is undefined initially and website crashes
+
+const cookieSession = require('cookie-session');
+app.use(cookieSession({
+  name: 'session',
+  keys: ['key1', 'key2']
+}));
+
+
 app.set("view engine", "ejs") //Sets ejs as the view engine
 
 //Old database style...overwritten by one below
@@ -57,11 +70,7 @@ const users = {
   }
 };
 
-const bodyParser = require("body-parser");
-app.use(bodyParser.urlencoded({extended: true}));
-var cookieParser = require('cookie-parser'); //If not included, cookies is undefined initially and website crashes
-const e = require("express");
-app.use(cookieParser()); //If not included, cookies is undefined initially and website crashes
+
 
 //Generate random alphanumeric string for the shortURL. 
 function generateRandomString() {
@@ -84,7 +93,7 @@ function emailAlreadyRegistered (email) {
   return false;
 };
 
-//Check if password matches password in user "database"
+//Check if password matches password in user "database"...obsolete now that we have hashed passwords
 function passwordMatchRegistered (password) {
   for (user in users) {
     if (password === users[user]['password']) {
@@ -153,7 +162,7 @@ app.get("/fetch", (req, res) => {
 //Displays all URLS in URL database
 app.get("/urls", (req, res) => {
   //Displays error if not logged in 
-  if (!req.cookies["user_id"]) {
+  if (!req.session.user_id) {
     //Sets status code to 403 
     res.status(403); //Is this correct status code? 
     //Displays 'Response: 403 Bad Request on the /login page
@@ -161,9 +170,9 @@ app.get("/urls", (req, res) => {
   //Else create a new database with only URLs created by logged in user.
   } else {
     //Creates new database with only URLs created by user (user defined by the user_id cookie)
-    let filteredUrlDatabase = filterURLDatabase(req.cookies["user_id"]);
+    let filteredUrlDatabase = filterURLDatabase(req.session.user_id);
     const templateVars = { 
-      user: users[req.cookies["user_id"]],
+      user: users[req.session.user_id],
       urls: filteredUrlDatabase
       };
     res.render("urls_index", templateVars);
@@ -173,12 +182,12 @@ app.get("/urls", (req, res) => {
 //Displays create new URL page
 app.get("/urls/new", (req, res) => {
   //If user is not logged in, redirect them to login page
-  if (!req.cookies['user_id']) {
+  if (!req.session.user_id) {
     res.redirect('/login');
   //If use is logged in, allow them to create new URL
   } else {
     const templateVars = {
-      user: users[req.cookies["user_id"]]
+      user: users[req.session.user_id]
     };
     res.render("urls_new", templateVars);
   };
@@ -187,7 +196,7 @@ app.get("/urls/new", (req, res) => {
 //Display single URL details (long and short)
 app.get("/urls/:shortURL", (req, res) => {
   //If user is not logged in, or logged in as the wrong user (for the shortURL in the browser bar), send error
-  if (!req.cookies['user_id'] || urlDatabase[req.params.shortURL]["userID"] != req.cookies["user_id"]) {
+  if (!req.session.user_id || urlDatabase[req.params.shortURL]["userID"] != req.session.user_id) {
     //Sets status code to 403 
     res.status(403); //Is this correct status code? 
     //Displays 'Response: 403 Bad Request on the /login page
@@ -195,7 +204,7 @@ app.get("/urls/:shortURL", (req, res) => {
   //Else display the urls_show page
   } else {
     const templateVars = { 
-      user: users[req.cookies["user_id"]],
+      user: users[req.session.user_id],
       shortURL: req.params.shortURL, 
       longURL: urlDatabase[req.params.shortURL]['longURL']
     };
@@ -206,7 +215,7 @@ app.get("/urls/:shortURL", (req, res) => {
 //Display registration URL page
 app.get("/register", (req, res) => {
   const templateVars = { 
-    user: users[req.cookies["user_id"]],
+    user: users[req.session.user_id],
     shortURL: req.params.shortURL, 
     //longURL: urlDatabase[req.params.shortURL]
     //longURL: urlDatabase[req.params.shortURL]['longURL']
@@ -233,7 +242,7 @@ app.get("/u/:shortURL", (req, res) => {
 //Displays login page
 app.get("/login", (req, res) => {
   const templateVars = { 
-    user: users[req.cookies["user_id"]],
+    user: users[req.session.user_id],
     shortURL: req.params.shortURL, 
     // longURL: urlDatabase[req.params.shortURL]
     //longURL: urlDatabase[req.params.shortURL]['longURL']
@@ -244,7 +253,7 @@ app.get("/login", (req, res) => {
 //Takes the data input into new /url/new and creates new urlDatabase entry
 app.post("/urls", (req, res) => {
   //If user is not logged in provide them with an error message
-  if(!req.cookies['user_id']) {
+  if(!req.session.user_id) {
     //Sets status code to 403 
     res.status(403);
     //Displays 'Response: 403 Bad Request on the /login page
@@ -255,7 +264,7 @@ app.post("/urls", (req, res) => {
     // urlDatabase[shortURLNew] = longURLNew; //Creates new entry in urlDatabse object 
     urlDatabase[shortURLNew] = { 
       longURL: longURLNew,
-      userID: req.cookies["user_id"]
+      userID: req.session.user_id
     }
     console.log(urlDatabase);
     res.redirect(`/urls/${shortURLNew}`) //Redirects to displaying single URL details (long and short) once new created.
@@ -265,7 +274,7 @@ app.post("/urls", (req, res) => {
 //Deletes a url from the url database. (url to delete is :shortURL variable)
 app.post("/urls/:shortURL/delete", (req, res) => {
   //Checks if the person trying to delete the url was the one to create it. Does not allow delete unless creator.
-  if (req.cookies['user_id'] !== urlDatabase[req.params['shortURL']]['userID']) {
+  if (req.session.user_id !== urlDatabase[req.params['shortURL']]['userID']) {
     //Sets status code to 403 
     res.status(403);
     //Displays 'Response'
@@ -283,7 +292,7 @@ app.post("/urls/:shortURL/delete", (req, res) => {
 //Edits url in the url database. (url to edit is :shortURL variable)
 app.post("/urls/:shortURL", (req, res) => {
   //Checks if the person trying to edit the url was the one to create it. Does not allow edit unless creator.
-  if (req.cookies['user_id'] !== urlDatabase[req.params['shortURL']]['userID']) {
+  if (req.session.user_id !== urlDatabase[req.params['shortURL']]['userID']) {
     //Sets status code to 403 
     res.status(403);
     //Displays 'Response'
@@ -318,14 +327,15 @@ app.post("/login", (req, res) => {
   //If the email has been registered and password is correct, update cookie with user_id to id of email entered
   } else {
     const id = userIDLookup(email);
-    res.cookie('user_id', id);
+    //Sets a user_id cookie to the login id
+    req.session.user_id = id;
     res.redirect(`/urls`);
   }
 });
 
 //Logsout user (clears cookie with id info of user)
 app.post("/logout", (req, res) => {
-  res.clearCookie("user_id");
+  req.session = null;
   res.redirect(`/urls`);
 });
 
@@ -358,7 +368,7 @@ app.post("/register", (req, res) => {
     };
     console.log(users);
     //Sets a user_id cookie to the newly created id
-    res.cookie('user_id', id);
+    req.session.user_id = id; //Right here
     res.redirect(`/urls`);
   }
 });
