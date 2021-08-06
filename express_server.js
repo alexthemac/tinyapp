@@ -22,25 +22,25 @@ const urlDatabase = {
     longURL: "https://www.google.ca",
     userID: "aJ48lW"
   },
-  a22222: {
+  b6UTxQ: {
+    longURL: "https://www.tsn.ca",
+    userID: "1"
+  },
+  i3BoG: {
     longURL: "https://www.google.ca",
     userID: "1"
   },
-  a33333: {
+  a3s2f7D: {
+    longURL: "https://www.eng-tips.com",
+    userID: "Alex"
+  },
+  b2sS4E: {
     longURL: "https://www.google.ca",
-    userID: "1"
+    userID: "Alex"
   },
-  b44444: {
+  cC24hd: {
     longURL: "https://www.tsn.ca",
-    userID: "2"
-  },
-  b55555: {
-    longURL: "https://www.tsn.ca",
-    userID: "2"
-  },
-  sgq3y6: {
-    longURL: "https://www.tsn.ca",
-    userID: "aJ48lW"
+    userID: "Alex"
   },
 };
 
@@ -51,10 +51,10 @@ const users = {
     email: "1@1.com",
     hashedPassword: bcrypt.hashSync("1", 10) //Turns the simple password "1" into hash
   },
-  "2": {
-    id: "2",
-    email: "2@2.com",
-    hashedPassword: bcrypt.hashSync("2", 10) //Turns the simple password "2" into hash
+  "Alex": {
+    id: "Alex",
+    email: "alex@mac.com",
+    hashedPassword: bcrypt.hashSync("alex", 10) //Turns the simple password "alex" into hash
   }
 };
 
