@@ -4,18 +4,18 @@ TinyApp is a full stack web application built with Node and Express that allows 
 
 ## Final Product
 
-!["TinyApp Login Page"](docs/tinyapp_login.png)
+!["Screenshot of TinyApp login page"](https://github.com/alexthemac/tinyapp/blob/master/docs/tinyapp_login.png?raw=true)
 
-!["TinyApp Create New Page"](docs/tinyapp_new.png)
+!["Screenshot of TinyApp create new URL page"](https://github.com/alexthemac/tinyapp/blob/master/docs/tinyapp_new.png?raw=true)
 
-!["TinyApp URLs"](docs/tinyapp_urls.png)
+!["Screenshot of TinyApp URLs page"](https://github.com/alexthemac/tinyapp/blob/master/docs/tinyapp_urls.png?raw=true)
 
 ## Dependencies
 
 - Node.js
 - Express
 - EJS
-- bcrypt
+- bcryptjs
 - body-parser
 - cookie-session
 
